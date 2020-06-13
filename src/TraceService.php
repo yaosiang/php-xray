@@ -21,24 +21,20 @@ class TraceService
     /** @var SegmentSubmitter */
     private $segmentSubmitter;
 
-    /** @var SamplingRuleMatcher */
-    private $samplingRuleMatcher;
 
     public function __construct(
         SamplingRuleRepository $samplingRuleRepository, 
-        SegmentSubmitter $segmentSubmitter = null,
-        SamplingRuleMatcher $samplingRuleMatcher = null
+        SegmentSubmitter $segmentSubmitter = null
     )
     {
         $this->samplingRuleRepository = $samplingRuleRepository;
-        $this->segmentSubmitter = $segmentSubmitter ?? new DaemonSegmentSubmitter();
-        $this->samplingRuleMatcher = $samplingRuleMatcher ?? new SamplingRuleMatcher();
+        $this->segmentSubmitter = ($segmentSubmitter !== null) ? $segmentSubmitter : new DaemonSegmentSubmitter();
     }
 
     public function submitTrace(Trace $trace)
     {
         $samplingRules = $this->samplingRuleRepository->getAll();
-        $samplingRule = $this->samplingRuleMatcher->matchFirst($trace, $samplingRules);
+        $samplingRule = SamplingRuleMatcher::matchFirst($trace, $samplingRules);
         
         $isSampled = $samplingRule !== null && Utils::randomPossibility($samplingRule['FixedRate'] * 100);
         $trace->setSampled($isSampled);

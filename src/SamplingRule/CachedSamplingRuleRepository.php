@@ -26,7 +26,7 @@ class CachedSamplingRuleRepository implements SamplingRuleRepository
     public function __construct(
         SamplingRuleRepository $samplingRuleRepository,
         CacheInterface $cache,
-        int $cacheTtlSeconds = 3600
+        $cacheTtlSeconds = 3600
     )
     {
         $this->samplingRuleRepository = $samplingRuleRepository;
@@ -34,7 +34,10 @@ class CachedSamplingRuleRepository implements SamplingRuleRepository
         $this->cacheTtlSeconds = $cacheTtlSeconds;
     }
 
-    public function getAll(): array
+    /**
+     * @return array
+     */
+    public function getAll()
     {        
         if ($this->cache->has(self::CACHE_KEY)) {
             return $this->cache->get(self::CACHE_KEY);

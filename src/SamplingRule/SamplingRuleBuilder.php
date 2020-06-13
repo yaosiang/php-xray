@@ -1,4 +1,5 @@
 <?php
+
 namespace Pkerrigan\Xray\SamplingRule;
 
 class SamplingRuleBuilder
@@ -17,7 +18,7 @@ class SamplingRuleBuilder
         'ServiceType' => '*',
         'URLPath' => '*'
     ];
-    
+
     public function __construct(array $otherSamplingRule = [])
     {
         // Copy constructor
@@ -27,50 +28,77 @@ class SamplingRuleBuilder
             }
         }
     }
-    
-    public function setFixedRate(int $percentage): self
+
+    /**
+     * @param int $percentage
+     * @return static
+     */
+    public function setFixedRate($percentage)
     {
         $this->samplingRule['FixedRate'] = $percentage / 100;
-        
+
         return $this;
     }
-    
-    public function setHttpMethod(string $httpMethod): self
+
+    /**
+     * @param string $httpMethod
+     * @return $this
+     */
+    public function setHttpMethod($httpMethod)
     {
         $this->samplingRule['HTTPMethod'] = $httpMethod;
-        
+
         return $this;
     }
-    
-    public function setHost(string $host): self
+
+    /**
+     * @param string $host
+     * @return $this
+     */
+    public function setHost($host)
     {
         $this->samplingRule['Host'] = $host;
-        
+
         return $this;
     }
-    
-    public function setServiceName(string $serviceName): self
+
+    /**
+     * @param string $serviceName
+     * @return static
+     */
+    public function setServiceName($serviceName)
     {
         $this->samplingRule['ServiceName'] = $serviceName;
-        
+
         return $this;
     }
-    
-    public function setServiceType(string $serviceType): self
+
+    /**
+     * @param string $serviceType
+     * @return static
+     */
+    public function setServiceType($serviceType)
     {
         $this->samplingRule['ServiceType'] = $serviceType;
-        
+
         return $this;
     }
-    
-    public function setUrlPath(string $urlPath): self
+
+    /**
+     * @param string $urlPath
+     * @return static
+     */
+    public function setUrlPath($urlPath)
     {
         $this->samplingRule['URLPath'] = $urlPath;
-        
+
         return $this;
     }
-    
-    public function build(): array
+
+    /**
+     * @return array
+     */
+    public function build()
     {
         return $this->samplingRule;
     }

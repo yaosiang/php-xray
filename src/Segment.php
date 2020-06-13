@@ -99,7 +99,7 @@ class Segment implements JsonSerializable
      * @param string $name
      * @return static
      */
-    public function setName(string $name)
+    public function setName($name)
     {
         $this->name = $name;
 
@@ -126,7 +126,7 @@ class Segment implements JsonSerializable
      * @param bool $error
      * @return static
      */
-    public function setError(bool $error)
+    public function setError($error)
     {
         $this->error = $error;
 
@@ -137,7 +137,7 @@ class Segment implements JsonSerializable
      * @param bool $fault
      * @return static
      */
-    public function setFault(bool $fault)
+    public function setFault($fault)
     {
         $this->fault = $fault;
 
@@ -175,7 +175,7 @@ class Segment implements JsonSerializable
     /**
      * @return bool
      */
-    public function isSampled(): bool
+    public function isSampled()
     {
         return $this->sampled;
     }
@@ -184,7 +184,7 @@ class Segment implements JsonSerializable
      * @param bool $sampled
      * @return static
      */
-    public function setSampled(bool $sampled)
+    public function setSampled($sampled)
     {
         $this->sampled = $sampled;
 
@@ -194,7 +194,7 @@ class Segment implements JsonSerializable
     /**
      * @return string
      */
-    public function getId(): string
+    public function getId()
     {
         return $this->id;
     }
@@ -203,7 +203,7 @@ class Segment implements JsonSerializable
      * @param string $parentId
      * @return static
      */
-    public function setParentId(string $parentId = null)
+    public function setParentId($parentId = null)
     {
         $this->parentId = $parentId;
 
@@ -214,7 +214,7 @@ class Segment implements JsonSerializable
      * @param string $traceId
      * @return static
      */
-    public function setTraceId(string $traceId)
+    public function setTraceId($traceId)
     {
         $this->traceId = $traceId;
 
@@ -224,7 +224,7 @@ class Segment implements JsonSerializable
     /**
      * @return string
      */
-    public function getTraceId(): string
+    public function getTraceId()
     {
         return $this->traceId;
     }
@@ -232,7 +232,7 @@ class Segment implements JsonSerializable
     /**
      * @return bool
      */
-    public function isOpen(): bool
+    public function isOpen()
     {
         return !is_null($this->startTime) && is_null($this->endTime);
     }
@@ -241,7 +241,7 @@ class Segment implements JsonSerializable
      * @param bool $independent
      * @return static
      */
-    public function setIndependent(bool $independent)
+    public function setIndependent($independent)
     {
         $this->independent = $independent;
 
@@ -253,7 +253,7 @@ class Segment implements JsonSerializable
      * @param string $value
      * @return static
      */
-    public function addAnnotation(string $key, string $value)
+    public function addAnnotation($key, $value)
     {
         $this->annotations[$key] = $value;
 
@@ -265,7 +265,7 @@ class Segment implements JsonSerializable
      * @param $value
      * @return static
      */
-    public function addMetadata(string $key, $value)
+    public function addMetadata($key, $value)
     {
         $this->metadata[$key] = $value;
 
@@ -275,7 +275,7 @@ class Segment implements JsonSerializable
     /**
      * @return Segment
      */
-    public function getCurrentSegment(): Segment
+    public function getCurrentSegment()
     {
         for ($max = count($this->subsegments); $this->lastOpenSegment < $max; $this->lastOpenSegment++) {
             if ($this->subsegments[$this->lastOpenSegment]->isOpen()) {
@@ -295,7 +295,7 @@ class Segment implements JsonSerializable
             'id' => $this->id,
             'parent_id' => $this->parentId,
             'trace_id' => $this->traceId,
-            'name' => $this->name ?? null,
+            'name' => $this->name,
             'start_time' => $this->startTime,
             'end_time' => $this->endTime,
             'subsegments' => empty($this->subsegments) ? null : $this->subsegments,

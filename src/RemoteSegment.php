@@ -18,7 +18,7 @@ class RemoteSegment extends Segment
      * @param bool $traced
      * @return static
      */
-    public function setTraced(bool $traced)
+    public function setTraced($traced)
     {
         $this->traced = $traced;
 

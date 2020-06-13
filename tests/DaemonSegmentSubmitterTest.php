@@ -4,6 +4,7 @@ namespace Pkerrigan\Xray;
 
 use PHPUnit\Framework\TestCase;
 use Pkerrigan\Xray\Submission\DaemonSegmentSubmitter;
+use Symfony\Bridge\PhpUnit\SetUpTearDownTrait;
 
 /**
  *
@@ -17,17 +18,17 @@ class DaemonSegmentSubmitterTest extends TestCase
      */
     private $socket;
 
-    public function setUp()
+    use SetUpTearDownTrait;
+
+    public function doSetup()
     {
-        parent::setUp();
         $this->socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
         socket_bind($this->socket, '127.0.0.1', 2000);
     }
 
-    public function tearDown()
+    public function doTearDown()
     {
         socket_close($this->socket);
-        parent::tearDown();
     }
 
     public function testSubmitsToDaemon()
@@ -106,7 +107,7 @@ class DaemonSegmentSubmitterTest extends TestCase
      * @param int $number
      * @return array
      */
-    private function receivePackets(int $number): array
+    private function receivePackets($number)
     {
         $from = '';
         $port = 0;

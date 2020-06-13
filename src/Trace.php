@@ -40,7 +40,7 @@ class Trace extends Segment
      * @param string $traceHeader
      * @return static
      */
-    public function setTraceHeader(string $traceHeader = null)
+    public function setTraceHeader($traceHeader = null)
     {
         if (is_null($traceHeader)) {
             return $this;
@@ -48,7 +48,7 @@ class Trace extends Segment
 
         $parts = explode(';', $traceHeader);
 
-        $variables = array_map(function ($str): array {
+        $variables = array_map(function ($str) {
             return explode('=', $str);
         }, $parts);
 
@@ -57,8 +57,8 @@ class Trace extends Segment
         if (isset($variables['Root'])) {
             $this->setTraceId($variables['Root']);
         }
-        $this->setSampled($variables['Sampled'] ?? false);
-        $this->setParentId($variables['Parent'] ?? null);
+        $this->setSampled(isset($variables['Sampled']) && $variables['Sampled']);
+        $this->setParentId(isset($variables['Parent']) ? $variables['Parent'] : null);
 
         return $this;
     }
@@ -67,7 +67,7 @@ class Trace extends Segment
      * @param string $serviceVersion
      * @return static
      */
-    public function setServiceVersion(string $serviceVersion)
+    public function setServiceVersion($serviceVersion)
     {
         $this->serviceVersion = $serviceVersion;
 
@@ -78,7 +78,7 @@ class Trace extends Segment
      * @param string $user
      * @return static
      */
-    public function setUser(string $user)
+    public function setUser($user)
     {
         $this->user = $user;
 
@@ -89,7 +89,7 @@ class Trace extends Segment
      * @param string $clientIpAddress
      * @return static
      */
-    public function setClientIpAddress(string $clientIpAddress)
+    public function setClientIpAddress($clientIpAddress)
     {
         $this->clientIpAddress = $clientIpAddress;
 
@@ -100,7 +100,7 @@ class Trace extends Segment
      * @param string $userAgent
      * @return static
      */
-    public function setUserAgent(string $userAgent)
+    public function setUserAgent($userAgent)
     {
         $this->userAgent = $userAgent;
 
@@ -110,7 +110,7 @@ class Trace extends Segment
     /**
      * @inheritdoc
      */
-    public function begin(int $samplePercentage = 10)
+    public function begin($samplePercentage = 10)
     {
         parent::begin();
 

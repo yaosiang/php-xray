@@ -10,6 +10,9 @@ namespace Pkerrigan\Xray\SamplingRule;
  */
 interface SamplingRuleRepository
 {
-    public function getAll(): array;
+    /**
+     * @return mixed
+     */
+    public function getAll();
 }
 

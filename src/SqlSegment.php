@@ -42,7 +42,7 @@ class SqlSegment extends RemoteSegment
      * @param string $url
      * @return static
      */
-    public function setUrl(string $url)
+    public function setUrl($url)
     {
         $this->url = $url;
 
@@ -53,7 +53,7 @@ class SqlSegment extends RemoteSegment
      * @param string $preparation
      * @return static
      */
-    public function setPreparation(string $preparation)
+    public function setPreparation($preparation)
     {
         $this->preparation = $preparation;
 
@@ -64,7 +64,7 @@ class SqlSegment extends RemoteSegment
      * @param string $databaseType
      * @return static
      */
-    public function setDatabaseType(string $databaseType)
+    public function setDatabaseType($databaseType)
     {
         $this->databaseType = $databaseType;
 
@@ -75,7 +75,7 @@ class SqlSegment extends RemoteSegment
      * @param null|string $databaseVersion
      * @return static
      */
-    public function setDatabaseVersion(string $databaseVersion)
+    public function setDatabaseVersion($databaseVersion)
     {
         $this->databaseVersion = $databaseVersion;
 
@@ -86,7 +86,7 @@ class SqlSegment extends RemoteSegment
      * @param string $driverVersion
      * @return static
      */
-    public function setDriverVersion(string $driverVersion)
+    public function setDriverVersion($driverVersion)
     {
         $this->driverVersion = $driverVersion;
 
@@ -97,7 +97,7 @@ class SqlSegment extends RemoteSegment
      * @param string $user
      * @return static
      */
-    public function setUser(string $user)
+    public function setUser($user)
     {
         $this->user = $user;
 
@@ -108,7 +108,7 @@ class SqlSegment extends RemoteSegment
      * @param string $query
      * @return static
      */
-    public function setQuery(string $query)
+    public function setQuery($query)
     {
         $this->query = $query;
 
