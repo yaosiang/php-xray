@@ -10,6 +10,7 @@ before_script:
   - composer install
 
 script:
+  - ./bin/run_php_validate.sh
   - export SYMFONY_PHPUNIT_VERSION=5.7
   - php vendor/bin/simple-phpunit
 

@@ -2,7 +2,7 @@
 
 namespace Pkerrigan\Xray\Submission;
 
-use Pkerrigan\Xray\Segment;
+use Pkerrigan\Xray\Segment\Segment;
 
 /**
  *

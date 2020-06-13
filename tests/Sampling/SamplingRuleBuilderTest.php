@@ -1,5 +1,6 @@
 <?php
-namespace Pkerrigan\Xray\SamplingRule;
+
+namespace Pkerrigan\Xray\Sampling;
 
 use PHPUnit\Framework\TestCase;
 
@@ -8,8 +9,8 @@ class SamplingRuleBuilderTest extends TestCase
 
     public function testBuild()
     {
-        $samplingRuleBuilder = (new SamplingRuleBuilder())
-            ->setFixedRate(75)
+        $samplingRule = (new Rule())
+            ->setFixedRate(0.75)
             ->setHost('example.com')
             ->setServiceName('app.example.com')
             ->setServiceType('*')
@@ -23,25 +24,26 @@ class SamplingRuleBuilderTest extends TestCase
             'ReservoirSize' => 1,
             'ResourceARN' => '*',
             'RuleARN' => '*',
-            'RuleName' => 'Pkerrigan\\Xray\\SamplingRule',
+            'RuleName' => 'Pkerrigan\\Xray\\Sampling\\Rule',
             'ServiceName' => 'app.example.com',
             'ServiceType' => '*',
             'URLPath' => '/my/path'
         ];
-        
-        $this->assertEquals($expected, $samplingRuleBuilder->build());
+
+        $this->assertEquals($expected, $samplingRule->toAWS());
     }
-    
+
     public function testBuildWithCopyConstructor()
     {
-        $copySamplingRule = (new SamplingRuleBuilder())
+        $copySamplingRule = (new Rule())
             ->setHost('example.com')
             ->setServiceName('app.example.com')
-            ->build();
-       
-        $samplingRuleBuilder = (new SamplingRuleBuilder($copySamplingRule))
+            ->toAWS();
+
+        $samplingRuleBuilder = (new Rule())
+            ->populateFromAWS($copySamplingRule)
             ->setUrlPath('/path');
-       
+
         $expected = [
             'FixedRate' => 1.0,
             'HTTPMethod' => '*',
@@ -50,13 +52,12 @@ class SamplingRuleBuilderTest extends TestCase
             'ReservoirSize' => 1,
             'ResourceARN' => '*',
             'RuleARN' => '*',
-            'RuleName' => 'Pkerrigan\\Xray\\SamplingRule',
+            'RuleName' => 'Pkerrigan\\Xray\\Sampling\\Rule',
             'ServiceName' => 'app.example.com',
             'ServiceType' => '*',
             'URLPath' => '/path'
         ];
-        
-        $this->assertEquals($expected, $samplingRuleBuilder->build());
+
+        $this->assertEquals($expected, $samplingRuleBuilder->toAWS());
     }
 }
-

@@ -1,6 +1,6 @@
 <?php
 
-namespace Pkerrigan\Xray;
+namespace Pkerrigan\Xray\Segment;
 
 /**
  *

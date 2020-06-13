@@ -1,5 +1,6 @@
 <?php
-namespace Pkerrigan\Xray\SamplingRule;
+
+namespace Pkerrigan\Xray\Sampling;
 
 use PHPUnit\Framework\TestCase;
 use Aws\XRay\XRayClient;
@@ -10,6 +11,9 @@ class AwsSdkSamplingRuleRepositoryTest extends TestCase
 
     public function testGetAll()
     {
+        $testName = 'Testing1234';
+        $testType = '123Type';
+
         $xrayClient = $this->createMock(XRayClient::class);
         $xrayClient->expects($this->once())
             ->method('getPaginator')
@@ -19,61 +23,59 @@ class AwsSdkSamplingRuleRepositoryTest extends TestCase
                     'SamplingRuleRecords' => [
                         [
                             'SamplingRule' => [
-                                'ServiceName' => '*',
-                                'ServiceType' => '*'
+                                'ServiceName' => $testName,
+                                'ServiceType' => $testType
                             ]
                         ]
                     ]
                 ]
             ]));
 
-        $repository = new AwsSdkSamplingRuleRepository($xrayClient);
+        $repository = new AwsSdkRuleRepository($xrayClient);
 
         $expected = [
-            [
-                'ServiceName' => '*',
-                'ServiceType' => '*'
-            ]
+            (new Rule())->setServiceName($testName)->setServiceType($testType)
         ];
-        
+
         $this->assertEquals($expected, $repository->getAll());
     }
-    
+
     public function testGetAllAwsErrorWithFallback()
     {
+        $testName = 'Testing1234';
+
         $exception = $this->createMock(AwsException::class);
-        
+
         $xrayClient = $this->createMock(XRayClient::class);
         $xrayClient->expects($this->once())
             ->method('getPaginator')
             ->with($this->equalTo('GetSamplingRules'))
             ->will($this->throwException($exception));
-        
-        $fallbackSamplingRule = [ 'my_fake_fallback_sampling_rule' ];
-            
-        $repository = new AwsSdkSamplingRuleRepository($xrayClient, $fallbackSamplingRule);
-        
+
+        $fallbackSamplingRule = ['ServiceName' => $testName];
+
+        $repository = new AwsSdkRuleRepository($xrayClient, $fallbackSamplingRule);
+
         $samplingRules = $repository->getAll();
-        
+
         $this->assertCount(1, $samplingRules);
-        $this->assertEquals($fallbackSamplingRule, $samplingRules[0]);
+        $this->assertEquals((new Rule())->setServiceName($testName)->toAWS(), $samplingRules[0]->toAWS());
     }
-    
+
     public function testGetAllAwsErrorWithoutFallback()
     {
         $exception = $this->createMock(AwsException::class);
-        
+
         $this->expectException(get_class($exception));
-        
+
         $xrayClient = $this->createMock(XRayClient::class);
         $xrayClient->expects($this->once())
             ->method('getPaginator')
             ->with($this->equalTo('GetSamplingRules'))
             ->will($this->throwException($exception));
-        
-        $repository = new AwsSdkSamplingRuleRepository($xrayClient);
-        
+
+        $repository = new AwsSdkRuleRepository($xrayClient);
+
         $repository->getAll();
     }
 }
-

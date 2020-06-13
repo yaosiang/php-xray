@@ -1,6 +1,6 @@
 <?php
 
-namespace Pkerrigan\Xray\SamplingRule;
+namespace Pkerrigan\Xray\Sampling;
 
 use Pkerrigan\Xray\Trace;
 use Pkerrigan\Xray\Utils;
@@ -11,12 +11,12 @@ use Pkerrigan\Xray\Utils;
  * @since 01/07/2019
  * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-console-sampling.html
  */
-class SamplingRuleMatcher
+class RuleMatcher
 {
     /**
      * @param Trace $trace
-     * @param array $samplingRules
-     * @return boolean
+     * @param Rule[] $samplingRules
+     * @return Rule|null
      */
     public static function matchFirst(Trace $trace, array $samplingRules)
     {
@@ -33,19 +33,19 @@ class SamplingRuleMatcher
 
     /**
      * @param Trace $trace
-     * @param array $samplingRule
+     * @param Rule $samplingRule
      * @return bool
      */
-    public static function match(Trace $trace, array $samplingRule)
+    public static function match(Trace $trace, $samplingRule)
     {
         $url = parse_url($trace->getUrl());
 
         $criterias = [
-            $samplingRule['ServiceName'] => $trace->getName() ? $trace->getName() : '',
-            $samplingRule['ServiceType'] => $trace->getType() ? $trace->getType() : '',
-            $samplingRule['HTTPMethod'] => $trace->getMethod() ? $trace->getMethod() : '',
-            $samplingRule['URLPath'] => isset($url['path']) ? $url['path'] : '',
-            $samplingRule['Host'] => isset($url['host']) ? $url['host'] : ''
+            $samplingRule->getServiceName() => $trace->getName() ? $trace->getName() : '',
+            $samplingRule->getServiceType() => $trace->getType() ? $trace->getType() : '',
+            $samplingRule->getHttpMethod() => $trace->getMethod() ? $trace->getMethod() : '',
+            $samplingRule->getUrlPath() => isset($url['path']) ? $url['path'] : '',
+            $samplingRule->getHost() => isset($url['host']) ? $url['host'] : ''
         ];
 
         foreach ($criterias as $criteria => $input) {
@@ -76,4 +76,3 @@ class SamplingRuleMatcher
         return preg_match("/^{$criteria}$/i", $input) === 1;
     }
 }
-

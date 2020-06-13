@@ -1,9 +1,11 @@
 <?php
 
-namespace Pkerrigan\Xray;
+namespace Pkerrigan\Xray\Submission;
 
 use PHPUnit\Framework\TestCase;
-use Pkerrigan\Xray\Submission\DaemonSegmentSubmitter;
+use Pkerrigan\Xray\Segment\Segment;
+use Pkerrigan\Xray\Segment\SqlSegment;
+use Pkerrigan\Xray\Trace;
 use Symfony\Bridge\PhpUnit\SetUpTearDownTrait;
 
 /**
@@ -13,12 +15,13 @@ use Symfony\Bridge\PhpUnit\SetUpTearDownTrait;
  */
 class DaemonSegmentSubmitterTest extends TestCase
 {
+    use SetUpTearDownTrait;
+
     /**
      * @var resource
      */
     private $socket;
 
-    use SetUpTearDownTrait;
 
     public function doSetup()
     {

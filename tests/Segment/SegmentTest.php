@@ -1,6 +1,6 @@
 <?php
 
-namespace Pkerrigan\Xray;
+namespace Pkerrigan\Xray\Segment;
 
 use PHPUnit\Framework\TestCase;
 use Pkerrigan\Xray\Submission\SegmentSubmitter;
@@ -221,7 +221,6 @@ class SegmentTest extends TestCase
 
         $segment->setSampled(true)
             ->submit($submitter);
-
     }
 
     public function testDoesNotSubmitIfNotSampled()
@@ -236,7 +235,6 @@ class SegmentTest extends TestCase
 
         $segment->setSampled(false)
             ->submit($submitter);
-
     }
 
     public function testGivenNoSubsegmentsCurrentSegmentReturnsSegment()

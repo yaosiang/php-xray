@@ -2,7 +2,7 @@
 
 namespace Pkerrigan\Xray\Submission;
 
-use Pkerrigan\Xray\Segment;
+use Pkerrigan\Xray\Segment\Segment;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -26,7 +26,9 @@ class NoopSegmentSubmitter implements SegmentSubmitter
      */
     public function submitSegment(Segment $segment)
     {
-        $this->logger->debug("Using Noop X-Ray Submmiter. Not submitting segment");
+        $this->logger->debug("Using Noop X-Ray Submmiter. Not submitting segment", [
+            'name' => $segment->getName(),
+            'id' => $segment->getId()
+        ]);
     }
-
 }

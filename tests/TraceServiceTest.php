@@ -3,18 +3,18 @@
 namespace Pkerrigan\Xray;
 
 use PHPUnit\Framework\TestCase;
-use Pkerrigan\Xray\SamplingRule\SamplingRuleBuilder;
-use Pkerrigan\Xray\SamplingRule\SamplingRuleRepository;
+use Pkerrigan\Xray\Sampling\Rule;
+use Pkerrigan\Xray\Sampling\RuleRepository;
 use Pkerrigan\Xray\Submission\SegmentSubmitter;
 
 class TraceServiceTest extends TestCase
 {
     public function testSubmitTrace()
     {
-        $samplingRuleRepo = $this->createMock(SamplingRuleRepository::class);
+        $samplingRuleRepo = $this->createMock(RuleRepository::class);
         $samplingRuleRepo->expects($this->once())
             ->method('getAll')
-            ->willReturn([(new SamplingRuleBuilder(['FixedRate' => 0.25]))->build()]);
+            ->willReturn([(new Rule())->setFixedRate(0.25)]);
 
         $segmentSubmitter = $this->createMock(SegmentSubmitter::class);
         $segmentSubmitter->expects($this->atMost(1))
@@ -25,4 +25,3 @@ class TraceServiceTest extends TestCase
         $traceService->submitTrace(new Trace());
     }
 }
-

@@ -1,5 +1,6 @@
 <?php
-namespace Pkerrigan\Xray\SamplingRule;
+
+namespace Pkerrigan\Xray\Sampling;
 
 use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\CacheInterface;
@@ -12,7 +13,7 @@ class CachedSamplingRuleRepositoryTest extends TestCase
             [ 'fake_sampling_rule' ]
         ];
         
-        $repository = $this->createMock(SamplingRuleRepository::class);
+        $repository = $this->createMock(RuleRepository::class);
         $repository->expects($this->never())
             ->method('getAll');
         
@@ -26,7 +27,7 @@ class CachedSamplingRuleRepositoryTest extends TestCase
         $cache->expects($this->never())
             ->method('set');
         
-        $cachedRepository = new CachedSamplingRuleRepository($repository, $cache);
+        $cachedRepository = new CachedRuleRepository($repository, $cache);
         $this->assertEquals($expected, $cachedRepository->getAll());
     }
     
@@ -36,7 +37,7 @@ class CachedSamplingRuleRepositoryTest extends TestCase
             [ 'fake_sampling_rule' ]
         ];
         
-        $repository = $this->createMock(SamplingRuleRepository::class);
+        $repository = $this->createMock(RuleRepository::class);
         $repository->expects($this->once())
             ->method('getAll')
             ->willReturn($expected);
@@ -50,8 +51,7 @@ class CachedSamplingRuleRepositoryTest extends TestCase
         $cache->expects($this->once())
             ->method('set');
         
-        $cachedRepository = new CachedSamplingRuleRepository($repository, $cache);
+        $cachedRepository = new CachedRuleRepository($repository, $cache);
         $this->assertEquals($expected, $cachedRepository->getAll());
     }
 }
-

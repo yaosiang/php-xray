@@ -1,18 +1,19 @@
 <?php
-namespace Pkerrigan\Xray\SamplingRule;
+
+namespace Pkerrigan\Xray\Sampling;
 
 use PHPUnit\Framework\TestCase;
 use Pkerrigan\Xray\Trace;
 
 class SamplingRuleMatcherTest extends TestCase
 {
-    
+
     /** @dataProvider provideMatch */
     public function testMatch($trace, $samplingRule, $expected)
     {
-        $this->assertEquals($expected, SamplingRuleMatcher::match($trace, $samplingRule));
+        $this->assertEquals($expected, RuleMatcher::match($trace, $samplingRule));
     }
-    
+
     public function provideMatch()
     {
         return [
@@ -21,24 +22,24 @@ class SamplingRuleMatcherTest extends TestCase
                     ->setUrl('https://example.com/path')
                     ->setMethod('GET')
                     ->setName('application'),
-                [
+                (new Rule())->populateFromAWS([
                     'HTTPMethod' => 'GET',
                     'Host' => 'example.com',
                     'URLPath' => '/path',
                     'ServiceName' => 'app*',
                     'ServiceType' => '*'
-                ],
+                ]),
                 true
-            ]            
+            ]
         ];
     }
-    
+
     /** @dataProvider provideMatchFirst */
     public function testMatchFirst($trace, $samplingRules, $expected)
     {
-        $this->assertEquals($expected, SamplingRuleMatcher::matchFirst($trace, $samplingRules));
+        $this->assertEquals($expected, RuleMatcher::matchFirst($trace, $samplingRules));
     }
-    
+
     public function provideMatchFirst()
     {
         return [
@@ -47,7 +48,7 @@ class SamplingRuleMatcherTest extends TestCase
                     ->setUrl('https://example.com/path')
                     ->setMethod('GET'),
                 [
-                    [
+                    (new Rule())->populateFromAWS([
                         'Priority' => 1000,
                         'HTTPMethod' => 'GET',
                         'Host' => 'example.com',
@@ -55,8 +56,8 @@ class SamplingRuleMatcherTest extends TestCase
                         'RuleName' => 'Default',
                         'ServiceName' => '*',
                         'ServiceType' => '*'
-                    ],
-                    [
+                    ]),
+                    (new Rule())->populateFromAWS([
                         'Priority' => 1,
                         'HTTPMethod' => 'GET',
                         'Host' => '*',
@@ -64,8 +65,8 @@ class SamplingRuleMatcherTest extends TestCase
                         'RuleName' => 'Not matching',
                         'ServiceName' => '*',
                         'ServiceType' => '*'
-                    ],
-                    [
+                    ]),
+                    (new Rule())->populateFromAWS([
                         'Priority' => 5,
                         'HTTPMethod' => 'GET',
                         'Host' => '*',
@@ -73,9 +74,9 @@ class SamplingRuleMatcherTest extends TestCase
                         'RuleName' => 'Important',
                         'ServiceName' => '*',
                         'ServiceType' => '*'
-                    ]
+                    ])
                 ],
-                [
+                (new Rule())->populateFromAWS([
                     'Priority' => 5,
                     'HTTPMethod' => 'GET',
                     'Host' => '*',
@@ -83,20 +84,20 @@ class SamplingRuleMatcherTest extends TestCase
                     'RuleName' => 'Important',
                     'ServiceName' => '*',
                     'ServiceType' => '*'
-                ]
+                ])
             ]
         ];
     }
-    
+
     /**
      *
      * @dataProvider provideStringMatchesCriteria
      */
     public function testStringMatchesCriteria($criteria, $input, $expected)
     {
-        $this->assertEquals($expected, SamplingRuleMatcher::stringMatchesCriteria($input, $criteria));
+        $this->assertEquals($expected, RuleMatcher::stringMatchesCriteria($input, $criteria));
     }
-    
+
     public function provideStringMatchesCriteria()
     {
         return [
@@ -158,4 +159,3 @@ class SamplingRuleMatcherTest extends TestCase
         ];
     }
 }
-

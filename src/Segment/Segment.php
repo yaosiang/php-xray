@@ -1,6 +1,6 @@
 <?php
 
-namespace Pkerrigan\Xray;
+namespace Pkerrigan\Xray\Segment;
 
 use JsonSerializable;
 use Pkerrigan\Xray\Submission\SegmentSubmitter;

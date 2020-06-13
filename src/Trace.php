@@ -2,6 +2,9 @@
 
 namespace Pkerrigan\Xray;
 
+use Pkerrigan\Xray\Segment\HttpTrait;
+use Pkerrigan\Xray\Segment\Segment;
+
 /**
  *
  * @author Patrick Kerrigan (patrickkerrigan.uk)

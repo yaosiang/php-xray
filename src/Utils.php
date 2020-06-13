@@ -2,6 +2,8 @@
 
 namespace Pkerrigan\Xray;
 
+use Pkerrigan\Xray\Sampling\Rule;
+
 /**
  *
  * @author Patrick Kerrigan (patrickkerrigan.uk)
@@ -11,13 +13,26 @@ namespace Pkerrigan\Xray;
 class Utils
 {
     /**
-     * @param array $samplingRules
-     * @return array
+     * Sorts rules by priority.
+     * If priority is the same we sort name by alphabet as rule name is unique.
+     * https://github.com/aws/aws-xray-sdk-node/blob/master/packages/core/lib/middleware/sampling/rule_cache.js#L50-L52
+     *
+     * @param Rule[] $samplingRules
+     * @return Rule[]
      */
     public static function sortSamplingRulesByPriorityDescending($samplingRules)
     {
-        usort($samplingRules, function ($samplingRule, $samplingRuleOther) {
-            return $samplingRule['Priority'] - $samplingRuleOther['Priority'];
+        usort($samplingRules, function (Rule $samplingRule, Rule $samplingRuleOther) {
+            $priority = $samplingRule->getPriority() - $samplingRuleOther->getPriority();
+            if ($priority !== 0) {
+                return $priority;
+            }
+
+            if ($samplingRule->getName() > $samplingRuleOther->getName()) {
+                return 1;
+            } else {
+                return -1;
+            }
         });
 
         return $samplingRules;
@@ -32,4 +47,3 @@ class Utils
         return random_int(0, 99) < $percentage;
     }
 }
-
