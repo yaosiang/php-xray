@@ -1,10 +1,11 @@
 <?php
 
-namespace Pkerrigan\Xray\Sampling;
+namespace Pkerrigan\Xray\Sampling\RuleRepository;
 
 use PHPUnit\Framework\TestCase;
 use Aws\XRay\XRayClient;
 use Aws\Exception\AwsException;
+use Pkerrigan\Xray\Sampling\Rule;
 
 class AwsSdkSamplingRuleRepositoryTest extends TestCase
 {

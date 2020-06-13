@@ -5,7 +5,7 @@ namespace Pkerrigan\Xray\Sampling;
 use PHPUnit\Framework\TestCase;
 use Pkerrigan\Xray\Trace;
 
-class SamplingRuleMatcherTest extends TestCase
+class RuleMatcherTest extends TestCase
 {
 
     /** @dataProvider provideMatch */

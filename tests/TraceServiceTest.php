@@ -4,7 +4,7 @@ namespace Pkerrigan\Xray;
 
 use PHPUnit\Framework\TestCase;
 use Pkerrigan\Xray\Sampling\Rule;
-use Pkerrigan\Xray\Sampling\RuleRepository;
+use Pkerrigan\Xray\Sampling\RuleRepository\RuleRepository;
 use Pkerrigan\Xray\Submission\SegmentSubmitter;
 
 class TraceServiceTest extends TestCase

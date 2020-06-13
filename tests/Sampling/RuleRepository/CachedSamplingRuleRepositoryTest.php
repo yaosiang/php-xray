@@ -1,6 +1,6 @@
 <?php
 
-namespace Pkerrigan\Xray\Sampling;
+namespace Pkerrigan\Xray\Sampling\RuleRepository;
 
 use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\CacheInterface;

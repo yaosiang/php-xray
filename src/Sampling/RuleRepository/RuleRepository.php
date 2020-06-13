@@ -1,6 +1,8 @@
 <?php
 
-namespace Pkerrigan\Xray\Sampling;
+namespace Pkerrigan\Xray\Sampling\RuleRepository;
+
+use Pkerrigan\Xray\Sampling\Rule;
 
 /**
  * Responsible for retrieving sampling rules
@@ -12,7 +14,7 @@ namespace Pkerrigan\Xray\Sampling;
 interface RuleRepository
 {
     /**
-     * @return mixed
+     * @return Rule[]
      */
     public function getAll();
 }

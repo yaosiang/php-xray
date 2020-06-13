@@ -1,9 +1,10 @@
 <?php
 
-namespace Pkerrigan\Xray\Sampling;
+namespace Pkerrigan\Xray\Sampling\RuleRepository;
 
 use Aws\Exception\AwsException;
 use Aws\XRay\XRayClient;
+use Pkerrigan\Xray\Sampling\Rule;
 
 /**
  * Retrives sampling rules from the AWS console

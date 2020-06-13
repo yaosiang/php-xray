@@ -4,7 +4,7 @@ namespace Pkerrigan\Xray\Sampling;
 
 use PHPUnit\Framework\TestCase;
 
-class SamplingRuleBuilderTest extends TestCase
+class RuleTest extends TestCase
 {
 
     public function testBuild()

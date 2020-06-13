@@ -1,7 +1,8 @@
 <?php
 
-namespace Pkerrigan\Xray\Sampling;
+namespace Pkerrigan\Xray\Sampling\RuleRepository;
 
+use Pkerrigan\Xray\Sampling\Rule;
 use Psr\SimpleCache\CacheInterface;
 
 /**

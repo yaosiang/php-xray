@@ -3,7 +3,7 @@
 namespace Pkerrigan\Xray;
 
 use Pkerrigan\Xray\Sampling\RuleMatcher;
-use Pkerrigan\Xray\Sampling\RuleRepository;
+use Pkerrigan\Xray\Sampling\RuleRepository\RuleRepository;
 use Pkerrigan\Xray\Submission\DaemonSegmentSubmitter;
 use Pkerrigan\Xray\Submission\SegmentSubmitter;
 
