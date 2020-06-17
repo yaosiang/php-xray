@@ -2,6 +2,8 @@
 
 namespace Pkerrigan\Xray\Sampling;
 
+use Pkerrigan\Xray\Utils;
+
 class Rule
 {
     /**
@@ -41,7 +43,7 @@ class Rule
     private $resourceARN = '*';
 
     /**
-     * The rule arn to sample
+     * The rules arn
      * @var string
      */
     private $ruleARN = '*';
@@ -69,6 +71,39 @@ class Rule
      * @var string
      */
     private $urlPath = '*';
+
+    /**
+     * The number of traces that are sampled against this rule
+     *
+     * @var int
+     */
+    private $sampledCount = 0;
+
+    /**
+     * The number of traces that are sampled against this rule but use the Borrowed from the reservoir
+     *
+     * @var int
+     */
+    private $borrowCount = 0;
+
+    /**
+     * The number of traces that match this rule
+     *
+     * @var int
+     */
+    private $requestCount = 0;
+
+    /**
+     * @var Reservoir $reservoir
+     */
+    private $reservoir;
+
+
+    public function __construct()
+    {
+        $this->reservoir = new Reservoir();
+    }
+
 
     /**
      * @return float
@@ -267,6 +302,198 @@ class Rule
         $this->urlPath = $urlPath;
         return $this;
     }
+
+    /**
+     * @return int
+     */
+    public function getSampledCount()
+    {
+        return $this->sampledCount;
+    }
+
+    /**
+     * @param int $sampledCount
+     * @return Rule
+     */
+    public function setSampledCount($sampledCount)
+    {
+        $this->sampledCount = $sampledCount;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getBorrowCount()
+    {
+        return $this->borrowCount;
+    }
+
+    /**
+     * @param int $borrowCount
+     * @return Rule
+     */
+    public function setBorrowCount($borrowCount)
+    {
+        $this->borrowCount = $borrowCount;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getRequestCount()
+    {
+        return $this->requestCount;
+    }
+
+    /**
+     * @param int $requestCount
+     * @return Rule
+     */
+    public function setRequestCount($requestCount)
+    {
+        $this->requestCount = $requestCount;
+        return $this;
+    }
+
+    /**
+     * @return Reservoir
+     */
+    public function getReservoir()
+    {
+        return $this->reservoir;
+    }
+
+    /**
+     * @param Reservoir $reservoir
+     * @return Rule
+     */
+    public function setReservoir($reservoir)
+    {
+        $this->reservoir = $reservoir;
+        return $this;
+    }
+
+    /**
+     * Increment the request count
+     *
+     * @return static
+     */
+    public function incrementRequestCount()
+    {
+        $this->requestCount++;
+        return $this;
+    }
+
+    /**
+     * Increment the sampled count
+     *
+     * @return static
+     */
+    public function incrementSampledCount()
+    {
+        $this->sampledCount++;
+        return $this;
+    }
+
+    /**
+     * Increment the borrowed count
+     *
+     * @return static
+     */
+    public function incrementBorrowedCount()
+    {
+        $this->borrowCount++;
+        return $this;
+    }
+
+    /**
+     * Gets a snapshot of the statistics
+     *
+     * @return array
+     */
+    public function snapshotStatistics()
+    {
+        return [
+            'requestCount' => $this->requestCount,
+            'borrowCount' => $this->borrowCount,
+            'sampledCount' => $this->sampledCount,
+        ];
+    }
+
+    /**
+     * Resets the statistics
+     *
+     * @return static
+     */
+    public function resetStatistics()
+    {
+        $this->setRequestCount(0)
+            ->setBorrowCount(0)
+            ->setSampledCount(0);
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function canBorrow()
+    {
+        return !!$this->getReservoirSize();
+    }
+
+    /**
+     * @return bool
+     */
+    public function everMatched()
+    {
+        return $this->getRequestCount() > 0;
+    }
+
+    /**
+     * @return bool
+     */
+    public function timeToReport()
+    {
+        return $this->getReservoir()->timeToReport();
+    }
+
+    /**
+     * Is this a default rule from AWS
+     *  "Default" is a reserved keyword from X-Ray back-end.
+     * @return bool
+     */
+    public function isDefault()
+    {
+        return $this->getName() === 'Default';
+    }
+
+    /**
+     * Merges an old version of this rule onto this new one
+     * @param Rule $rule
+     * @return $this
+     */
+    public function merge(Rule $rule)
+    {
+        $this->setReservoir($rule->getReservoir())
+            ->setRequestCount($rule->getRequestCount())
+            ->setBorrowCount($rule->getBorrowCount())
+            ->setSampledCount($rule->getSampledCount());
+
+        $rule = null;
+        return $this;
+    }
+
+    /**
+     * The cache key to use
+     * @return string
+     */
+    public function getCacheKey()
+    {
+        return Utils::stripInvalidCharacters($this->getName());
+    }
+
 
     /**
      * Returns the rule in the AWS Format

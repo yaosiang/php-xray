@@ -3,6 +3,7 @@
 namespace Pkerrigan\Xray;
 
 use PHPUnit\Framework\TestCase;
+use Pkerrigan\Xray\Segment\Plugins\ECS;
 
 /**
  *
@@ -19,7 +20,7 @@ class TraceTest extends TestCase
         $this->assertEquals(spl_object_hash($instance1), spl_object_hash($instance2));
     }
 
-    public function testSerialisesCorrectly()
+    public function testSerialisesCorrectlyNoEnvironment()
     {
         $trace = new Trace();
         $trace->setName('Test trace')
@@ -37,6 +38,7 @@ class TraceTest extends TestCase
 
         $this->assertEquals('Test trace', $serialised['name']);
         $this->assertEquals('1.2.3', $serialised['service']['version']);
+        $this->assertArrayNotHasKey('environment', $serialised['service']);
         $this->assertEquals('TestUser', $serialised['user']);
         $this->assertEquals('http://example.com', $serialised['http']['request']['url']);
         $this->assertEquals('GET', $serialised['http']['request']['method']);
@@ -44,6 +46,51 @@ class TraceTest extends TestCase
         $this->assertEquals('TestAgent', $serialised['http']['request']['user_agent']);
         $this->assertEquals(200, $serialised['http']['response']['status']);
         $this->assertEquals($trace->getTraceId(), $serialised['trace_id']);
+    }
+
+    public function testSerialisesCorrectlyWithEnvironment()
+    {
+        $trace = new Trace();
+        $trace->setName('Test trace')
+            ->setServiceVersion('1.2.3')
+            ->setServiceEnvironment('dev')
+            ->setUser('TestUser')
+            ->setUrl('http://example.com')
+            ->setMethod('GET')
+            ->setClientIpAddress('127.0.0.1')
+            ->setUserAgent('TestAgent')
+            ->setResponseCode(200)
+            ->begin()
+            ->end();
+
+        $serialised = $trace->jsonSerialize();
+
+        $this->assertEquals('Test trace', $serialised['name']);
+        $this->assertEquals('1.2.3', $serialised['service']['version']);
+        $this->assertEquals('dev', $serialised['service']['environment']);
+        $this->assertEquals('TestUser', $serialised['user']);
+        $this->assertEquals('http://example.com', $serialised['http']['request']['url']);
+        $this->assertEquals('GET', $serialised['http']['request']['method']);
+        $this->assertEquals('127.0.0.1', $serialised['http']['request']['client_ip']);
+        $this->assertEquals('TestAgent', $serialised['http']['request']['user_agent']);
+        $this->assertEquals(200, $serialised['http']['response']['status']);
+        $this->assertEquals($trace->getTraceId(), $serialised['trace_id']);
+    }
+
+
+    public function testSerialisesCorrectlyWithECSPlugin()
+    {
+        $trace = new Trace();
+        $trace->setName('Test trace')
+            ->addECSPlugin()
+            ->begin()
+            ->end();
+
+        $serialised = $trace->jsonSerialize();
+
+        $this->assertEquals('AWS::ECS::Container', $serialised['origin']);
+        $this->assertArrayHasKey('container', $serialised['aws']['ecs']);
+        $this->assertIsString($serialised['aws']['ecs']['container']);
     }
 
     public function testGeneratesCorrectFormatTraceId()
@@ -97,5 +144,18 @@ class TraceTest extends TestCase
         $this->assertEquals($traceId, $trace->getTraceId());
         $this->assertTrue($trace->isSampled());
         $this->assertEquals($parentId, $trace->jsonSerialize()['parent_id']);
+    }
+
+    public function testGivenParentHeaderGetsHeaderForFutureRequests()
+    {
+        $traceId = '1-ab3169f3-1b7f38ac63d9037ef1843ca4';
+        $parentId = '1234567890';
+
+        $trace = new Trace();
+        $trace->setTraceHeader("Root=$traceId;Sampled=1;Parent=$parentId");
+
+        $newHeader = $trace->getAmazonTraceHeader();
+        $this->assertStringStartsWith("Root=", $newHeader);
+        $this->assertStringEndsWith(";Parent=$traceId;Sampled=1", $newHeader);
     }
 }

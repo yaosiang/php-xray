@@ -29,6 +29,10 @@ trait HttpTrait
      * @var int
      */
     protected $responseCode;
+    /**
+     * @var int
+     */
+    protected $contentLength;
 
     /**
      * @param string $url
@@ -40,7 +44,7 @@ trait HttpTrait
 
         return $this;
     }
-    
+
     /**
      * @return string
      */
@@ -59,7 +63,7 @@ trait HttpTrait
 
         return $this;
     }
-    
+
     /**
      * @return string
      */
@@ -80,6 +84,16 @@ trait HttpTrait
     }
 
     /**
+     * @param int $contentLength
+     * @return HttpTrait
+     */
+    public function setContentLength($contentLength)
+    {
+        $this->contentLength = $contentLength;
+        return $this;
+    }
+
+    /**
      * @return array
      */
     protected function serialiseHttpData()
@@ -92,7 +106,8 @@ trait HttpTrait
                 'user_agent' => $this->userAgent
             ]),
             'response' => array_filter([
-                'status' => $this->responseCode
+                'status' => $this->responseCode,
+                'content_length' => $this->contentLength,
             ])
         ];
     }

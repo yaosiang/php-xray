@@ -3,6 +3,8 @@
 namespace Pkerrigan\Xray\Segment;
 
 use JsonSerializable;
+use Pkerrigan\Xray\Sampling\Rule;
+use Pkerrigan\Xray\Segment\Plugins\Plugin;
 use Pkerrigan\Xray\Submission\SegmentSubmitter;
 
 /**
@@ -52,6 +54,10 @@ class Segment implements JsonSerializable
     /**
      * @var bool
      */
+    protected $throttle = false;
+    /**
+     * @var bool
+     */
     protected $sampled = false;
     /**
      * @var bool
@@ -69,6 +75,16 @@ class Segment implements JsonSerializable
      * @var int
      */
     private $lastOpenSegment = 0;
+
+    /**
+     * @var null|string
+     */
+    private $origin = null;
+
+    /**
+     * @var null | string[]
+     */
+    private $aws = [];
 
     public function __construct()
     {
@@ -105,7 +121,7 @@ class Segment implements JsonSerializable
 
         return $this;
     }
-    
+
     /**
      * @return string|null
      */
@@ -113,7 +129,7 @@ class Segment implements JsonSerializable
     {
         return $this->name;
     }
-    
+
     /**
      * @return string|null
      */
@@ -134,6 +150,14 @@ class Segment implements JsonSerializable
     }
 
     /**
+     * @return boolean
+     */
+    public function isError()
+    {
+        return $this->error;
+    }
+
+    /**
      * @param bool $fault
      * @return static
      */
@@ -141,6 +165,68 @@ class Segment implements JsonSerializable
     {
         $this->fault = $fault;
 
+        return $this;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isFault()
+    {
+        return $this->fault;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isThrottle()
+    {
+        return $this->throttle;
+    }
+
+    /**
+     * @param bool $throttle
+     * @return Segment
+     */
+    public function setThrottle($throttle)
+    {
+        $this->throttle = $throttle;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getStartTime()
+    {
+        return $this->startTime;
+    }
+
+    /**
+     * @param float $startTime
+     * @return Segment
+     */
+    public function setStartTime($startTime)
+    {
+        $this->startTime = $startTime;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getEndTime()
+    {
+        return $this->endTime;
+    }
+
+    /**
+     * @param float $endTime
+     * @return Segment
+     */
+    public function setEndTime($endTime)
+    {
+        $this->endTime = $endTime;
         return $this;
     }
 
@@ -211,6 +297,14 @@ class Segment implements JsonSerializable
     }
 
     /**
+     * @return string
+     */
+    public function getParentId()
+    {
+        return $this->parentId;
+    }
+
+    /**
      * @param string $traceId
      * @return static
      */
@@ -272,6 +366,61 @@ class Segment implements JsonSerializable
         return $this;
     }
 
+
+    /**
+     * @param Plugin $plugin
+     * @return static
+     */
+    public function addPluginData(Plugin $plugin)
+    {
+        $this->aws = array_merge_recursive($this->aws, $plugin->getData());
+
+        if (isset($this->aws['origin'])) {
+            $this->setOrigin($this->aws['origin']);
+        }
+
+        return $this;
+    }
+
+    /*******
+     * Plugins
+     *******/
+
+    /**
+     * @return string|null
+     */
+    public function getOrigin()
+    {
+        return $this->origin;
+    }
+
+    /**
+     * @param string|null $origin
+     * @return Segment
+     */
+    public function setOrigin($origin)
+    {
+        $this->origin = $origin;
+        return $this;
+    }
+
+    /**
+     * Sets matched rule
+     *
+     * @param Rule $rule
+     * @return Segment
+     */
+    public function setMatchedRule(Rule $rule)
+    {
+        $this->aws = array_merge_recursive($this->aws, [
+            'xray' => [
+                'rule_name' => $rule->getName()
+            ]
+        ]);
+
+        return $this;
+    }
+
     /**
      * @return Segment
      */
@@ -292,6 +441,8 @@ class Segment implements JsonSerializable
     public function jsonSerialize()
     {
         return array_filter([
+            'aws' => $this->aws,
+            'origin' => $this->origin,
             'id' => $this->id,
             'parent_id' => $this->parentId,
             'trace_id' => $this->traceId,
@@ -302,6 +453,7 @@ class Segment implements JsonSerializable
             'type' => $this->getType(),
             'fault' => $this->fault,
             'error' => $this->error,
+            'throttle' => $this->throttle,
             'annotations' => empty($this->annotations) ? null : $this->annotations,
             'metadata' => empty($this->metadata) ? null : $this->metadata
         ]);

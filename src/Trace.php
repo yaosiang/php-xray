@@ -3,6 +3,7 @@
 namespace Pkerrigan\Xray;
 
 use Pkerrigan\Xray\Segment\HttpTrait;
+use Pkerrigan\Xray\Segment\Plugins\ECS;
 use Pkerrigan\Xray\Segment\Segment;
 
 /**
@@ -22,6 +23,10 @@ class Trace extends Segment
      * @var string
      */
     private $serviceVersion;
+    /**
+     * @var string
+     */
+    private $serviceEnvironment;
     /**
      * @var string
      */
@@ -45,17 +50,11 @@ class Trace extends Segment
      */
     public function setTraceHeader($traceHeader = null)
     {
-        if (is_null($traceHeader)) {
+        $variables = Utils::getHeaderParts($traceHeader);
+
+        if (is_null($variables) || empty($traceHeader)) {
             return $this;
         }
-
-        $parts = explode(';', $traceHeader);
-
-        $variables = array_map(function ($str) {
-            return explode('=', $str);
-        }, $parts);
-
-        $variables = array_column($variables, 1, 0);
 
         if (isset($variables['Root'])) {
             $this->setTraceId($variables['Root']);
@@ -73,6 +72,17 @@ class Trace extends Segment
     public function setServiceVersion($serviceVersion)
     {
         $this->serviceVersion = $serviceVersion;
+
+        return $this;
+    }
+
+    /**
+     * @param string $serviceEnvironment
+     * @return static
+     */
+    public function setServiceEnvironment($serviceEnvironment)
+    {
+        $this->serviceEnvironment = $serviceEnvironment;
 
         return $this;
     }
@@ -113,7 +123,7 @@ class Trace extends Segment
     /**
      * @inheritdoc
      */
-    public function begin($samplePercentage = 10)
+    public function begin()
     {
         parent::begin();
 
@@ -121,11 +131,16 @@ class Trace extends Segment
             $this->generateTraceId();
         }
 
-        if (!$this->isSampled()) {
-            $this->sampled = Utils::randomPossibility($samplePercentage);
-        }
-
         return $this;
+    }
+
+    /**
+     * Helper function to add ECS Plugin data
+     * @return Trace
+     */
+    public function addECSPlugin()
+    {
+        return $this->addPluginData(new ECS());
     }
 
     /**
@@ -136,17 +151,48 @@ class Trace extends Segment
         $data = parent::jsonSerialize();
 
         $data['http'] = $this->serialiseHttpData();
-        $data['service'] = empty($this->serviceVersion) ? null : ['version' => $this->serviceVersion];
+        $data['service'] = array_filter([
+            'version' => $this->serviceVersion,
+            'environment' => $this->serviceEnvironment
+        ]);
         $data['user'] = $this->user;
 
         return array_filter($data);
     }
 
-    private function generateTraceId()
+    /**
+     * Gets a trace header value that we can use to put on all future HTTP Requests
+     * Put in `X-Amzn-Trace-Id`
+     *
+     * @return string
+     */
+    public function getAmazonTraceHeader()
     {
+        return 'Root=' . $this->generateId() . ';' .
+            'Parent=' . $this->getTraceId() . ';' .
+            'Sampled=' . ($this->isSampled() ? '1' : '0');
+    }
+
+    /**
+     * Generates an amazon id.
+     * @return string
+     * @throws \Exception
+     */
+    private function generateId()
+    {
+
         $startHex = dechex((int)$this->startTime);
         $uuid = bin2hex(random_bytes(12));
 
-        $this->setTraceId("1-{$startHex}-{$uuid}");
+        return "1-{$startHex}-{$uuid}";
+    }
+
+    /**
+     * Sets a new generated amazon id.
+     * @throws \Exception
+     */
+    private function generateTraceId()
+    {
+        $this->setTraceId($this->generateId());
     }
 }

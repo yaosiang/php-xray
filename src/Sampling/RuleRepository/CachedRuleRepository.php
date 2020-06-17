@@ -2,8 +2,10 @@
 
 namespace Pkerrigan\Xray\Sampling\RuleRepository;
 
+use Pkerrigan\Xray\Sampling\CacheError;
 use Pkerrigan\Xray\Sampling\Rule;
 use Psr\SimpleCache\CacheInterface;
+use Psr\SimpleCache\InvalidArgumentException;
 
 /**
  * Proxy class used to cache retrieval of sampling rules
@@ -14,7 +16,7 @@ use Psr\SimpleCache\CacheInterface;
 class CachedRuleRepository implements RuleRepository
 {
 
-    const CACHE_KEY = 'Pkerrigan\\Xray\\Sampling\Rules';
+    const CACHE_KEY = 'PkerriganXraySamplingRules';
 
     /** @var RuleRepository */
     private $samplingRuleRepository;
@@ -37,6 +39,8 @@ class CachedRuleRepository implements RuleRepository
 
     /**
      * @return Rule[]
+     * @throws CacheError
+     * @throws InvalidArgumentException
      */
     public function getAll()
     {
@@ -45,7 +49,9 @@ class CachedRuleRepository implements RuleRepository
         }
 
         $samplingRules = $this->samplingRuleRepository->getAll();
-        $this->cache->set(self::CACHE_KEY, $samplingRules, $this->cacheTtlSeconds);
+        if (!$this->cache->set(self::CACHE_KEY, $samplingRules, $this->cacheTtlSeconds)) {
+            throw new CacheError('Failed to save sampling rules to the cache');
+        }
 
         return $samplingRules;
     }

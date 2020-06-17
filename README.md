@@ -23,19 +23,39 @@ The `TraceService` is a facade that takes care of downloading sampling rules fro
 
 ```php
 $xrayClient = new \Aws\XRay\XRayClient($config);
-$samplingRuleRepository = new AwsSdkSamplingRuleRepository($xrayClient);
+$samplingRuleRepository = new \Pkerrigan\Xray\Sampling\RuleRepository\AwsSdkRuleRepository($xrayClient);
+$samplingTargetRepository = new \Pkerrigan\Xray\Sampling\TargetRepository\AwsSdkTargetRepository($xrayClient);
 ```
 
 Applications will most likely need to download this information very often, so it is recommended (but optional) to cache it. You will need to provide any PSR compliant cache implementation and, since there are [plenty of other libraries](https://packagist.org/providers/psr/simple-cache-implementation) focusing on that, you will have to install and configure your preferred caching implementation yourself. Then wrap the sampling rule repository in a cache implementation:
 
 ```php
-$cachedSamplingRuleRepository = new CachedSamplingRuleRepository($samplingRuleRepository, $psrCacheImplementation);
+$cachedSamplingRuleRepository = new \Pkerrigan\Xray\Sampling\RuleRepository\CachedRuleRepository($samplingRuleRepository, $psrCacheImplementation);
+```
+
+Next we need to create a state system that PHP can use between requests. This state service should use a PSR cache that is specific to the server it is running on.
+
+```php
+$stateManager = new \Pkerrigan\Xray\Sampling\StateManager($psrCacheImplementation);
+```
+
+Then we use the state service, the rule repository, and the target repository to create a cache service for the sampler.
+
+```php
+$samplerCache = new \Pkerrigan\Xray\Sampling\SamplerCache($cachedSamplingRuleRepository, $samplingTargetRepository, $stateManager);
+```
+
+
+After we use the Sampler Cache to create our public facing Sampler service for the Trace Service
+
+```php
+$sampler = new \Pkerrigan\Xray\Sampler($samplerCache);
 ```
 
 Lastly, create the `TraceService`. By default only submitting via the AWS X-Ray daemon is supported:
 
 ```php
-$traceService = new TraceService($samplingRuleRepository, new DaemonSegmentSubmitter());
+$traceService = new \Pkerrigan\Xray\TraceService($sampler, new \Pkerrigan\Xray\Submission\DaemonSegmentSubmitter());
 ```
 
 ### Starting a trace
@@ -60,10 +80,10 @@ Trace::getInstance()
 You can add as many segments to your trace as necessary, including nested segments. To add an SQL query to your trace, you'd do the following:
 
 ```php
-Trace::getInstance()
+\Pkerrigan\Xray\Trace::getInstance()
     ->getCurrentSegment()
     ->addSubsegment(
-        (new SqlSegment())
+        (new \Pkerrigan\Xray\Segment\SqlSegment())
             ->setName('db.example.com')
             ->setDatabaseType('PostgreSQL')
             ->setQuery($mySanitisedQuery)    // Make sure to remove sensitive data before passing in a query
@@ -73,7 +93,7 @@ Trace::getInstance()
     
 // Run your query here
     
-Trace::getInstance()
+\Pkerrigan\Xray\Trace::getInstance()
     ->getCurrentSegment()
     ->end();
 ```
@@ -85,31 +105,31 @@ The `getCurrentSegment()` method will always return the most recently opened seg
 At the end of your request, you'll want to end and submit your trace.
 
 ```php
-Trace::getInstance()
+\Pkerrigan\Xray\Trace::getInstance()
     ->end()
     ->setResponseCode(http_response_code());
 
-$traceService->submitTrace(Trace::getInstance());
+$traceService->submitTrace(\Pkerrigan\Xray\Trace::getInstance());
 ```
 
 
 ### Fallback sampling rule
 
-If any error occurrs in AWS regarding retrieving sampling rules, you can optionally configure a default sampling rule that will be provided instead. When creating the sampling rule repository:
+If any error occurs in AWS regarding retrieving sampling rules, you can optionally configure a default sampling rule that will be provided instead. When creating the sampling rule repository:
 
 ```php
 // Any options not provided will default to '*'
-$fallbackSamplingRule = (new SamplingRuleBuilder())
-	->setFixedRate(75)
+$fallbackSamplingRule = (new \Pkerrigan\Xray\Sampling\Rule())
+	->setFixedRate(0.75)
 	->setHttpMethod('GET')
 	->setHost('example.com')
 	->setServiceName('app.example.com')
 	->setServiceType('*')
 	->setUrlPath('/my/path')
-	->build();
+	->toAWS();
 	
 $xrayClient = new \Aws\XRay\XRayClient($config);
-$samplingRuleRepository = new AwsSdkSamplingRuleRepository($xrayClient, $fallbackSamplingRule);
+$samplingRuleRepository = new \Pkerrigan\Xray\Sampling\RuleRepository\AwsSdkRuleRepository($xrayClient, $fallbackSamplingRule);
 ```
 
 ## Features not yet implemented

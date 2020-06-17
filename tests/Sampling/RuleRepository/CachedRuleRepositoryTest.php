@@ -3,6 +3,7 @@
 namespace Pkerrigan\Xray\Sampling\RuleRepository;
 
 use PHPUnit\Framework\TestCase;
+use Pkerrigan\Xray\Sampling\CacheError;
 use Psr\SimpleCache\CacheInterface;
 
 class CachedSamplingRuleRepositoryTest extends TestCase
@@ -50,7 +51,10 @@ class CachedSamplingRuleRepositoryTest extends TestCase
             ->method('get');
         $cache->expects($this->once())
             ->method('set');
-        
+
+        $this->expectException(CacheError::class);
+        $this->expectExceptionMessage('Failed to save sampling rules to the cache');
+
         $cachedRepository = new CachedRuleRepository($repository, $cache);
         $this->assertEquals($expected, $cachedRepository->getAll());
     }

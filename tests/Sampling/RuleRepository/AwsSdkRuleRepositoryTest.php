@@ -7,7 +7,7 @@ use Aws\XRay\XRayClient;
 use Aws\Exception\AwsException;
 use Pkerrigan\Xray\Sampling\Rule;
 
-class AwsSdkSamplingRuleRepositoryTest extends TestCase
+class AwsSdkRuleRepositoryTest extends TestCase
 {
 
     public function testGetAll()
