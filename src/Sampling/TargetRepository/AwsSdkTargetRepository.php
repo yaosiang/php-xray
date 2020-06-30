@@ -5,6 +5,7 @@ namespace Pkerrigan\Xray\Sampling\TargetRepository;
 use AWS\Result;
 use Aws\XRay\XRayClient;
 use Pkerrigan\Xray\Sampling\Rule;
+use Pkerrigan\Xray\Trace;
 
 /**
  * Retrieves sampling targets from the AWS console
@@ -30,14 +31,23 @@ class AwsSdkTargetRepository
      */
     public function getAll(array $rules, $clientId)
     {
-        return $this->assembleTargets(
-            $this->xrayClient->getSamplingTargets($this->convertRulesForAWSSDK($rules, $clientId))
-        );
+        $segment = Trace::getInstance()->startSubsegment('AwsSdkTargetRepository::getAll');
+        $awsRules = $this->convertRulesForAWSSDK($rules, $clientId);
+        
+        $awsSegment = Trace::getInstance()->startSubsegment('XRayClient::getSamplingTargets');
+        $awsTargets = $this->xrayClient->getSamplingTargets($awsRules);
+        $awsSegment->end();
+        
+        $targets = $this->assembleTargets($awsTargets);
+        $segment->end();
+        return $targets;
     }
 
     private function assembleTargets(Result $targetResults)
     {
+        $segment = Trace::getInstance()->startSubsegment('AwsSdkTargetRepository::assembleTargets');
         if (!isset($targetResults['SamplingTargetDocuments'])) {
+            $segment->end();
             return [];
         }
 
@@ -52,7 +62,7 @@ class AwsSdkTargetRepository
                     $targetDocumentArray['ReservoirQuotaTTL']->getTimestamp() :
                     null);
         }
-
+        $segment->end();
         return $targetDocuments;
     }
 
@@ -63,6 +73,7 @@ class AwsSdkTargetRepository
      */
     private function convertRulesForAWSSDK(array $rules, $clientId)
     {
+        $segment = Trace::getInstance()->startSubsegment('AwsSdkTargetRepository::convertRulesForAWSSDK');
         $documents = [];
 
         $now = time();
@@ -79,6 +90,7 @@ class AwsSdkTargetRepository
             ];
         }
 
+        $segment->end();
         return ['SamplingStatisticsDocuments' => $documents];
     }
 }

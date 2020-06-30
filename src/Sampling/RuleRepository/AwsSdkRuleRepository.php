@@ -5,6 +5,7 @@ namespace Pkerrigan\Xray\Sampling\RuleRepository;
 use Aws\Exception\AwsException;
 use Aws\XRay\XRayClient;
 use Pkerrigan\Xray\Sampling\Rule;
+use Pkerrigan\Xray\Trace;
 
 /**
  * Retrives sampling rules from the AWS console
@@ -35,6 +36,7 @@ class AwsSdkRuleRepository implements RuleRepository
      */
     public function getAll()
     {
+        $segment = Trace::getInstance()->startSubsegment('AwsSdkRuleRepository::getAll');
         try {
             /** @var Rule[] $samplingRules */
             $samplingRules = [];
@@ -47,10 +49,11 @@ class AwsSdkRuleRepository implements RuleRepository
                     $samplingRules[] = (new Rule())->populateFromAWS($samplingRule['SamplingRule']);
                 }
             }
-
+            $segment->end();
             return $samplingRules;
         } catch (AwsException $ex) {
             if (!empty($this->fallbackSamplingRule)) {
+                $segment->end();
                 return [(new Rule())->populateFromAWS($this->fallbackSamplingRule)];
             }
 

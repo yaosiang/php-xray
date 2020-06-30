@@ -4,6 +4,7 @@ namespace Pkerrigan\Xray\Sampling\RuleRepository;
 
 use Pkerrigan\Xray\Sampling\CacheError;
 use Pkerrigan\Xray\Sampling\Rule;
+use Pkerrigan\Xray\Trace;
 use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 
@@ -44,8 +45,12 @@ class CachedRuleRepository implements RuleRepository
      */
     public function getAll()
     {
+        $segment = Trace::getInstance()->startSubsegment('CachedRuleRepository::getAll');
+
         if ($this->cache->has(self::CACHE_KEY)) {
-            return $this->cache->get(self::CACHE_KEY);
+            $samplingRules = $this->cache->get(self::CACHE_KEY);
+            $segment->end();
+            return  $samplingRules;
         }
 
         $samplingRules = $this->samplingRuleRepository->getAll();
@@ -53,6 +58,7 @@ class CachedRuleRepository implements RuleRepository
             throw new CacheError('Failed to save sampling rules to the cache');
         }
 
+        $segment->end();
         return $samplingRules;
     }
 }

@@ -9,7 +9,7 @@ use Pkerrigan\Xray\Segment\Segment;
 /**
  *
  * @author Patrick Kerrigan (patrickkerrigan.uk)
- * @since 13/05/2018
+ * @since  13/05/2018
  */
 class Trace extends Segment
 {
@@ -19,14 +19,17 @@ class Trace extends Segment
      * @var static
      */
     private static $instance;
+
     /**
      * @var string
      */
     private $serviceVersion;
+
     /**
      * @var string
      */
     private $serviceEnvironment;
+
     /**
      * @var string
      */
@@ -42,6 +45,14 @@ class Trace extends Segment
         }
 
         return self::$instance;
+    }
+
+    /**
+     * @return static
+     */
+    public static function setInstance(Trace $trace)
+    {
+        self::$instance = $trace;
     }
 
     /**
@@ -136,11 +147,41 @@ class Trace extends Segment
 
     /**
      * Helper function to add ECS Plugin data
+     *
      * @return Trace
      */
     public function addECSPlugin()
     {
         return $this->addPluginData(new ECS());
+    }
+
+    /**
+     * Helper function to start a subsegment
+     * @param $name
+     * @return Segment
+     */
+    public function startSubsegment($name)
+    {
+        $segment = (new Segment())
+            ->setName($name)
+            ->begin();
+        $this->addSubsegment($segment);
+
+        return $segment;
+    }
+
+    /**
+     * @param Segment $subsegment
+     * @return static
+     */
+    public function addSubsegment(Segment $subsegment)
+    {
+        $segment = $this->getCurrentSegment();
+        if ($segment === $this) {
+            return parent::addSubsegment($subsegment);
+        }
+
+        return $segment->addSubsegment($subsegment);
     }
 
     /**
@@ -151,10 +192,12 @@ class Trace extends Segment
         $data = parent::jsonSerialize();
 
         $data['http'] = $this->serialiseHttpData();
-        $data['service'] = array_filter([
-            'version' => $this->serviceVersion,
-            'environment' => $this->serviceEnvironment
-        ]);
+        $data['service'] = array_filter(
+            [
+                'version' => $this->serviceVersion,
+                'environment' => $this->serviceEnvironment,
+            ]
+        );
         $data['user'] = $this->user;
 
         return array_filter($data);
@@ -175,12 +218,12 @@ class Trace extends Segment
 
     /**
      * Generates an amazon id.
+     *
      * @return string
      * @throws \Exception
      */
     private function generateId()
     {
-
         $startHex = dechex((int)$this->startTime);
         $uuid = bin2hex(random_bytes(12));
 
@@ -189,6 +232,7 @@ class Trace extends Segment
 
     /**
      * Sets a new generated amazon id.
+     *
      * @throws \Exception
      */
     private function generateTraceId()

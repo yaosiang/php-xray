@@ -2,6 +2,7 @@
 
 namespace Pkerrigan\Xray\Sampling;
 
+use Pkerrigan\Xray\Segment\Segment;
 use Pkerrigan\Xray\Trace;
 use Pkerrigan\Xray\Utils;
 
@@ -20,14 +21,21 @@ class RuleMatcher
      */
     public static function matchFirst(Trace $trace, array $samplingRules)
     {
+        $segment = (new Segment())
+            ->begin()
+            ->setName('RuleMatcher::matchFirst');
+        $trace->addSubsegment($segment);
+
         $samplingRules = Utils::sortSamplingRulesByPriorityDescending($samplingRules);
 
         foreach ($samplingRules as $samplingRule) {
             if (self::match($trace, $samplingRule)) {
+                $segment->end();
                 return $samplingRule;
             }
         }
 
+        $segment->end();
         return null;
     }
 

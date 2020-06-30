@@ -236,10 +236,6 @@ class Segment implements JsonSerializable
      */
     public function addSubsegment(Segment $subsegment)
     {
-        if (!$this->isOpen()) {
-            return $this;
-        }
-
         $this->subsegments[] = $subsegment;
         $subsegment->setSampled($this->isSampled());
 

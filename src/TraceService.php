@@ -2,6 +2,7 @@
 
 namespace Pkerrigan\Xray;
 
+use Pkerrigan\Xray\Segment\Segment;
 use Pkerrigan\Xray\Submission\SegmentSubmitter;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\SimpleCache\InvalidArgumentException;
@@ -38,19 +39,24 @@ class TraceService
     /**
      * Adds a sampling decision to the Trace
      * @param Trace $trace
-     * @param ServerRequestInterface $request
      * @return Trace
      * @throws InvalidArgumentException
      */
     public function addSamplingDecision(Trace $trace)
     {
+        Trace::setInstance($trace);
+        $segment = $trace->startSubsegment('TraceService::addSamplingDecision');
+
         // Trace is already sampled.
         // Return true.
         if ($trace->isSampled()) {
+            $segment->end();
             return $trace;
         }
 
-        return $trace->setSampled($this->sampler->shouldSample($trace));
+        $trace = $trace->setSampled($this->sampler->shouldSample($trace));
+        $segment->end();
+        return $trace;
     }
 
     /**

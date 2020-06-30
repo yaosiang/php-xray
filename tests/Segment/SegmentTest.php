@@ -152,7 +152,7 @@ class SegmentTest extends TestCase
         );
     }
 
-    public function testAddingSubsegmentToClosedSegmentFails()
+    public function testAddingSubsegmentToClosedSegmentFSucceeds()
     {
         $segment = new Segment();
         $subsegment = new Segment();
@@ -169,7 +169,7 @@ class SegmentTest extends TestCase
 
         $serialised = $segment->jsonSerialize();
 
-        $this->assertArrayNotHasKey('subsegments', $serialised);
+        $this->assertArrayHasKey('subsegments', $serialised);
     }
 
     public function testAddingSubsegmentSetsSampled()
