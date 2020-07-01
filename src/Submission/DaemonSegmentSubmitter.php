@@ -13,7 +13,7 @@ class DaemonSegmentSubmitter implements SegmentSubmitter
 {
     const MAX_SEGMENT_SIZE = 64000;
 
-    const HEADER = [
+    public $HEADER = [
         'format' => 'json',
         'version' => 1
     ];
@@ -68,7 +68,7 @@ class DaemonSegmentSubmitter implements SegmentSubmitter
      */
     private function buildPacket($segment)
     {
-        return implode("\n", array_map('json_encode', [self::HEADER, $segment]));
+        return implode("\n", array_map('json_encode', [$this->HEADER, $segment]));
     }
 
     /**

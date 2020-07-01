@@ -12,7 +12,7 @@
     ],
 
     "require": {
-        "php": "^5.6 | ^7 | ^8",
+        "php": "^5.5 | ^5.6 | ^7 | ^8",
         "ext-json": "*",
         "ext-sockets": "*",
         "aws/aws-sdk-php": "^3",

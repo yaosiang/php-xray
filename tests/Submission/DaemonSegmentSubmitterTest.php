@@ -100,7 +100,7 @@ class DaemonSegmentSubmitterTest extends TestCase
     {
         for ($i = 0; $i < count($expectedPackets); $i++) {
             $this->assertEquals(
-                json_encode(DaemonSegmentSubmitter::HEADER) . "\n" . json_encode($expectedPackets[$i]),
+                json_encode((new DaemonSegmentSubmitter())->HEADER) . "\n" . json_encode($expectedPackets[$i]),
                 $buffer[$i]
             );
         }
