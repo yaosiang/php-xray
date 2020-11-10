@@ -33,11 +33,11 @@ class AwsSdkTargetRepository
     {
         $segment = Trace::getInstance()->startSubsegment('AwsSdkTargetRepository::getAll');
         $awsRules = $this->convertRulesForAWSSDK($rules, $clientId);
-        
+
         $awsSegment = Trace::getInstance()->startSubsegment('XRayClient::getSamplingTargets');
         $awsTargets = $this->xrayClient->getSamplingTargets($awsRules);
         $awsSegment->end();
-        
+
         $targets = $this->assembleTargets($awsTargets);
         $segment->end();
         return $targets;

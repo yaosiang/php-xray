@@ -13,11 +13,11 @@ class CachedSamplingRuleRepositoryTest extends TestCase
         $expected = [
             [ 'fake_sampling_rule' ]
         ];
-        
+
         $repository = $this->createMock(RuleRepository::class);
         $repository->expects($this->never())
             ->method('getAll');
-        
+
         $cache = $this->createMock(CacheInterface::class);
         $cache->expects($this->once())
             ->method('has')
@@ -27,22 +27,22 @@ class CachedSamplingRuleRepositoryTest extends TestCase
             ->willReturn($expected);
         $cache->expects($this->never())
             ->method('set');
-        
+
         $cachedRepository = new CachedRuleRepository($repository, $cache);
         $this->assertEquals($expected, $cachedRepository->getAll());
     }
-    
+
     public function testGetAllWhenCacheNotExists()
     {
         $expected = [
             [ 'fake_sampling_rule' ]
         ];
-        
+
         $repository = $this->createMock(RuleRepository::class);
         $repository->expects($this->once())
             ->method('getAll')
             ->willReturn($expected);
-        
+
         $cache = $this->createMock(CacheInterface::class);
         $cache->expects($this->once())
             ->method('has')
