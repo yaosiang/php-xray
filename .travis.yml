@@ -12,8 +12,7 @@ before_script:
 script:
   - ./bin/run_php_validate.sh
   - export SYMFONY_PHPUNIT_VERSION=5.7
-  - php vendor/bin/simple-phpunit
+  - XDEBUG_MODE=coverage php vendor/bin/simple-phpunit
 
 after_script:
   - php vendor/bin/php-coveralls -v
-

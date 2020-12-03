@@ -1,4 +1,6 @@
 [![Build Status](https://img.shields.io/travis/patrickkerrigan/php-xray.svg?style=flat-square)](https://travis-ci.org/patrickkerrigan/php-xray) [![Maintainability](https://api.codeclimate.com/v1/badges/548ad6b7c25bef8004cd/maintainability)](https://codeclimate.com/github/patrickkerrigan/php-xray/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/548ad6b7c25bef8004cd/test_coverage)](https://codeclimate.com/github/patrickkerrigan/php-xray/test_coverage) [![PHP 7.0](https://img.shields.io/badge/php-7.0-blue.svg?style=flat-square)](http://php.net/)  [![Packagist](https://img.shields.io/packagist/v/pkerrigan/xray.svg?style=flat-square)](https://packagist.org/packages/pkerrigan/xray)
+use Pkerrigan\Xray\Trace;
+use Pkerrigan\Xray\HttpTrait;
 
 # pkerrigan\xray
 A basic PHP instrumentation library for AWS X-Ray
@@ -52,6 +54,12 @@ After we use the Sampler Cache to create our public facing Sampler service for t
 $sampler = new \Pkerrigan\Xray\Sampler($samplerCache);
 ```
 
+Or simply use helper
+
+```php
+$sampler = \Pkerrigan\Xray\XrayHelper::buildSampler($xrayClient, $psrCacheImplementation);
+```
+
 Lastly, create the `TraceService`. By default only submitting via the AWS X-Ray daemon is supported:
 
 ```php
@@ -72,7 +80,7 @@ Trace::getInstance()
     ->setName('app.example.com')
     ->setUrl($_SERVER['REQUEST_URI'])
     ->setMethod($_SERVER['REQUEST_METHOD'])
-    ->begin(); 
+    ->begin();
 ```
 
 ### Adding a segment to a trace
@@ -89,10 +97,10 @@ You can add as many segments to your trace as necessary, including nested segmen
             ->setQuery($mySanitisedQuery)    // Make sure to remove sensitive data before passing in a query
             ->begin()    
     );
-    
-    
+
+
 // Run your query here
-    
+
 \Pkerrigan\Xray\Trace::getInstance()
     ->getCurrentSegment()
     ->end();
@@ -109,7 +117,13 @@ At the end of your request, you'll want to end and submit your trace.
     ->end()
     ->setResponseCode(http_response_code());
 
+// If need handling sample rules
 $traceService->submitTrace(\Pkerrigan\Xray\Trace::getInstance());
+// If this project is getting trace id from other server
+if (Trace::getInstance()->isSampled()) {
+  $submitter = new \Pkerrigan\Xray\Submission\DaemonSegmentSubmitter();
+  $submitter->submitSegment(Trace::getInstance());
+}
 ```
 
 
@@ -127,7 +141,7 @@ $fallbackSamplingRule = (new \Pkerrigan\Xray\Sampling\Rule())
 	->setServiceType('*')
 	->setUrlPath('/my/path')
 	->toAWS();
-	
+
 $xrayClient = new \Aws\XRay\XRayClient($config);
 $samplingRuleRepository = new \Pkerrigan\Xray\Sampling\RuleRepository\AwsSdkRuleRepository($xrayClient, $fallbackSamplingRule);
 ```

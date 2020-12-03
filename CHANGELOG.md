@@ -1,8 +1,13 @@
 # Changelog
 
+## [1.3.0] - 2020-12-03
+### Added
+- Helper for building sampler.
+- Helper for running callback inside segment.
+
 ## [1.2.0] - 2019-01-24
 ### Changed
-- Refactored ```getCurrentSegment()``` to drastically reduce the cost of searching large collections of segments. This may change behaviour in applications which begin earlier segments after later segments (e.g with asynchronous workloads). This can be solved by adding segments to a parent at the point ```begin()``` is called rather than before.
+- Refactored ```getCurrentSegment()``` to drastically reduce the cost of searching large collections of segments. This may change behavior in applications which begin earlier segments after later segments (e.g with asynchronous workloads). This can be solved by adding segments to a parent at the point ```begin()``` is called rather than before.
 
 ## [1.1.0] - 2018-07-13
 ### Added
